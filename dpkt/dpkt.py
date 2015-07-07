@@ -7,6 +7,7 @@ import itertools
 import socket
 import struct
 import array
+from six import with_metaclass
 
 
 class Error(Exception):
@@ -36,12 +37,12 @@ class _MetaPacket(type):
             t.__hdr_fields__ = [x[0] for x in st]
             t.__hdr_fmt__ = getattr(t, '__byte_order__', '>') + ''.join([x[1] for x in st])
             t.__hdr_len__ = struct.calcsize(t.__hdr_fmt__)
-            t.__hdr_defaults__ = dict(zip(
-                t.__hdr_fields__, [x[2] for x in st]))
+            t.__hdr_defaults__ = dict(list(zip(
+                t.__hdr_fields__, [x[2] for x in st])))
         return t
 
 
-class Packet(object):
+class Packet(with_metaclass(_MetaPacket, object)):
     """Base packet class, with metaclass magic to generate members from
     self.__hdr__.
 
@@ -69,7 +70,6 @@ class Packet(object):
     >>> Foo('hello, world!')
     Foo(baz=' wor', foo=1751477356L, bar=28460, data='ld!')
     """
-    __metaclass__ = _MetaPacket
 
     def __init__(self, *args, **kwargs):
         """Packet constructor with ([buf], [field=val,...]) prototype.
@@ -93,7 +93,7 @@ class Packet(object):
         else:
             for k in self.__hdr_fields__:
                 setattr(self, k, copy.copy(self.__hdr_defaults__[k]))
-            for k, v in kwargs.iteritems():
+            for k, v in kwargs.items():
                 setattr(self, k, v)
 
     def __len__(self):
@@ -127,7 +127,7 @@ class Packet(object):
         # (3)
         l.extend(
             ['%s=%r' % (attr_name, attr_value)
-             for attr_name, attr_value in self.__dict__.iteritems()
+             for attr_name, attr_value in self.__dict__.items()
              if attr_name[0] != '_'                   # exclude _private attributes
              and attr_name != self.data.__class__.__name__.lower()])  # exclude fields like ip.udp
         # (4)
@@ -153,7 +153,7 @@ class Packet(object):
                     vals.append(v)
             try:
                 return struct.pack(self.__hdr_fmt__, *vals)
-            except struct.error, e:
+            except struct.error as e:
                 raise PackError(str(e))
 
     def pack(self):
@@ -162,7 +162,7 @@ class Packet(object):
 
     def unpack(self, buf):
         """Unpack packet header fields from buf, and set self.data."""
-        for k, v in itertools.izip(self.__hdr_fields__,
+        for k, v in zip(self.__hdr_fields__,
                                    struct.unpack(self.__hdr_fmt__, buf[:self.__hdr_len__])):
             setattr(self, k, v)
         self.data = buf[self.__hdr_len__:]
