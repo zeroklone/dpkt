@@ -81,7 +81,7 @@ class Packet(with_metaclass(_MetaPacket, object)):
         Optional keyword arguments correspond to members to set
         (matching fields in self.__hdr__, or 'data').
         """
-        self.data = ''
+        self.data = b''
         if args:
             try:
                 self.unpack(args[0])
@@ -136,7 +136,10 @@ class Packet(with_metaclass(_MetaPacket, object)):
         return '%s(%s)' % (self.__class__.__name__, ', '.join(l))
 
     def __str__(self):
-        return self.pack_hdr() + str(self.data)
+        return str(self.__bytes__())
+    
+    def __bytes__(self):
+        return self.pack_hdr() + bytes(self.data)
 
     def pack_hdr(self):
         """Return packed header string."""
@@ -158,7 +161,7 @@ class Packet(with_metaclass(_MetaPacket, object)):
 
     def pack(self):
         """Return packed header + self.data string."""
-        return str(self)
+        return bytes(self)
 
     def unpack(self, buf):
         """Unpack packet header fields from buf, and set self.data."""
