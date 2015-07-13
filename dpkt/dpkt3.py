@@ -189,7 +189,7 @@ def hexdump(buf, length=16):
 
 def in_cksum_add(s, buf):
     n = len(buf)
-    cnt = (n / 2) * 2
+    cnt = (n // 2) * 2
     a = array.array('H', buf[:cnt])
     if cnt != n:
         a.append(struct.unpack('H', buf[-1] + '\x00')[0])
