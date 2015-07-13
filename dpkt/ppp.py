@@ -45,13 +45,13 @@ class PPP(dpkt.Packet):
             if self.p > 0xff:
                 return struct.pack('>H', self.p)
             return dpkt.Packet.pack_hdr(self)
-        except struct.error, e:
+        except struct.error as e:
             raise dpkt.PackError(str(e))
 
 
 def __load_protos():
     g = globals()
-    for k, v in g.iteritems():
+    for k, v in g.items():
         if k.startswith('PPP_'):
             name = k[4:]
             modname = name.lower()
