@@ -6,6 +6,7 @@ import arp
 import dpkt
 import sys
 import struct
+import compatible
 
 DHCP_OP_REQUEST = 1
 DHCP_OP_REPLY = 2
@@ -152,20 +153,14 @@ class DHCP(dpkt.Packet):
         buf = self.data
         l = []
         while buf:
-            if sys.version_info < (3,):
-                t = ord(buf[0])
-            else:
-                t = buf[0]
+            t = compatible.compatible_ord(buf[0])
             if t == 0xff:
                 buf = buf[1:]
                 break
             elif t == 0:
                 buf = buf[1:]
             else:
-                if sys.version_info < (3,):
-                    n = ord(buf[1])
-                else:
-                    n = buf[1]
+                n = compatible.compatible_ord(buf[1])
                 l.append((t, buf[2:2 + n]))
                 buf = buf[2 + n:]
         self.opts = l
