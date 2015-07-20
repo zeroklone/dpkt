@@ -82,7 +82,8 @@ nbstat_svcs = {
 }
 
 
-def node_to_service_name((name, service, flags)):
+def node_to_service_name(xxx_todo_changeme):
+    (name, service, flags) = xxx_todo_changeme
     try:
         unique = int(flags & NS_NAME_G == 0)
         for namepfx, svcname in nbstat_svcs[(service, unique)]:
