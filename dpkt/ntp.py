@@ -84,12 +84,12 @@ class NTP(dpkt.Packet):
     def _set_mode(self, mode): self.mode = mode
     # =================================================
 
-__s = '\x24\x02\x04\xef\x00\x00\x00\x84\x00\x00\x33\x27\xc1\x02\x04\x02\xc8\x90\xec\x11\x22\xae\x07\xe5\xc8\x90\xf9\xd9\xc0\x7e\x8c\xcd\xc8\x90\xf9\xd9\xda\xc5\xb0\x78\xc8\x90\xf9\xd9\xda\xc6\x8a\x93'
+__s = b'\x24\x02\x04\xef\x00\x00\x00\x84\x00\x00\x33\x27\xc1\x02\x04\x02\xc8\x90\xec\x11\x22\xae\x07\xe5\xc8\x90\xf9\xd9\xc0\x7e\x8c\xcd\xc8\x90\xf9\xd9\xda\xc5\xb0\x78\xc8\x90\xf9\xd9\xda\xc6\x8a\x93'
 
 
 def test_ntp_pack():
     n = NTP(__s)
-    assert (__s == str(n))
+    assert (__s == bytes(n))
 
 
 def test_ntp_unpack():
@@ -98,7 +98,7 @@ def test_ntp_unpack():
     assert (n.v == 4)
     assert (n.mode == SERVER)
     assert (n.stratum == 2)
-    assert (n.id == '\xc1\x02\x04\x02')
+    assert (n.id == b'\xc1\x02\x04\x02')
     # test get/set functions
     n.li = ALARM_CONDITION
     n.v = 3
@@ -110,4 +110,4 @@ def test_ntp_unpack():
 if __name__ == '__main__':
     test_ntp_pack()
     test_ntp_unpack()
-    print 'Tests Successful...'
+    print('Tests Successful...')
