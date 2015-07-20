@@ -125,7 +125,7 @@ class SelectStartKeys(dpkt.Packet):
         ('line_id', 'I', 1),
         ('call_id', 'I', 0),
         ('softkey_set', 'I', 8),
-        ('softkey_map', 'I', 0xffffffffL)
+        ('softkey_map', 'I', 0xffffffff)
     )
 
 
