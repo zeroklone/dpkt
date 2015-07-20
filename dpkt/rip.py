@@ -39,10 +39,13 @@ class RIP(dpkt.Packet):
         return len
 
     def __str__(self):
-        auth = ''
+        return str(self.__bytes__())
+    
+    def __bytes__(self):
+        auth = b''
         if self.auth:
-            auth = str(self.auth)
-        return self.pack_hdr() + auth + ''.join(map(str, self.rtes))
+            auth = bytes(self.auth)
+        return self.pack_hdr() + auth + b''.join(map(bytes, self.rtes))
 
 
 class RTE(dpkt.Packet):
@@ -64,12 +67,12 @@ class Auth(dpkt.Packet):
     )
 
 
-__s = '\x02\x02\x00\x00\x00\x02\x00\x00\x01\x02\x03\x00\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x02\x00\x00\xc0\xa8\x01\x08\xff\xff\xff\xfc\x00\x00\x00\x00\x00\x00\x00\x01'
+__s = b'\x02\x02\x00\x00\x00\x02\x00\x00\x01\x02\x03\x00\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x02\x00\x00\xc0\xa8\x01\x08\xff\xff\xff\xfc\x00\x00\x00\x00\x00\x00\x00\x01'
 
 
 def test_rtp_pack():
     r = RIP(__s)
-    assert (__s == str(r))
+    assert (__s == bytes(r))
 
 
 def test_rtp_unpack():
@@ -86,4 +89,4 @@ def test_rtp_unpack():
 if __name__ == '__main__':
     test_rtp_pack()
     test_rtp_unpack()
-    print 'Tests Successful...'
+    print('Tests Successful...')
