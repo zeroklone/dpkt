@@ -86,11 +86,11 @@ class GRE(dpkt.Packet):
         dpkt.Packet.unpack(self, buf)
         fields, fmts = self.opt_fields_fmts()
         if fields:
-            fmt = ''.join(fmts)
+            fmt = b''.join(fmts)
             fmtlen = struct.calcsize(fmt)
             vals = struct.unpack(fmt, self.data[:fmtlen])
             self.data = self.data[fmtlen:]
-            self.__dict__.update(dict(zip(fields, vals)))
+            self.__dict__.update(dict(list(zip(fields, vals))))
         if self.flags & GRE_RP:
             l = []
             while True:
@@ -104,19 +104,22 @@ class GRE(dpkt.Packet):
         setattr(self, self.data.__class__.__name__.lower(), self.data)
 
     def __len__(self):
-        opt_fmtlen = struct.calcsize(''.join(self.opt_fields_fmts()[1]))
+        opt_fmtlen = struct.calcsize(b''.join(self.opt_fields_fmts()[1]))
         return self.__hdr_len__ + opt_fmtlen + sum(map(len, self.sre)) + len(self.data)
 
     def __str__(self):
+        return str(self.__bytes__())
+    
+    def __bytes__(self):
         fields, fmts = self.opt_fields_fmts()
         if fields:
             vals = []
             for f in fields:
                 vals.append(getattr(self, f))
-            opt_s = struct.pack(''.join(fmts), *vals)
+            opt_s = struct.pack(b''.join(fmts), *vals)
         else:
-            opt_s = ''
-        return self.pack_hdr() + opt_s + ''.join(map(str, self.sre)) + str(self.data)
+            opt_s = b''
+        return self.pack_hdr() + opt_s + b''.join(map(bytes, self.sre)) + bytes(self.data)
 
 # XXX - auto-load GRE dispatch table from Ethernet dispatch table
 import ethernet
