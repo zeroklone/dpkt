@@ -8,7 +8,7 @@ import dpkt
 
 
 # RFC 1952
-GZIP_MAGIC = '\x1f\x8b'
+GZIP_MAGIC = b'\x1f\x8b'
 
 # Compression methods
 GZIP_MSTORED = 0
@@ -74,11 +74,11 @@ class Gzip(dpkt.Packet):
             self.extra = GzipExtra(self.data[2:2 + n])
             self.data = self.data[2 + n:]
         if self.flags & GZIP_FNAME:
-            n = self.data.find('\x00')
+            n = self.data.find(b'\x00')
             self.filename = self.data[:n]
             self.data = self.data[n + 1:]
         if self.flags & GZIP_FCOMMENT:
-            n = self.data.find('\x00')
+            n = self.data.find(b'\x00')
             self.comment = self.data[:n]
             self.data = self.data[n + 1:]
         if self.flags & GZIP_FENCRYPT:
@@ -90,19 +90,19 @@ class Gzip(dpkt.Packet):
         l = []
         if self.extra:
             self.flags |= GZIP_FEXTRA
-            s = str(self.extra)
+            s = bytes(self.extra)
             l.append(struct.pack('>H', len(s)))
             l.append(s)
         if self.filename:
             self.flags |= GZIP_FNAME
             l.append(self.filename)
-            l.append('\x00')
+            l.append(b'\x00')
         if self.comment:
             self.flags |= GZIP_FCOMMENT
             l.append(self.comment)
-            l.append('\x00')
+            l.append(b'\x00')
         l.insert(0, super(Gzip, self).pack_hdr())
-        return ''.join(l)
+        return b''.join(l)
 
     def compress(self):
         """Compress self.data."""
@@ -120,4 +120,4 @@ if __name__ == '__main__':
     import sys
 
     gz = Gzip(open(sys.argv[1]).read())
-    print `gz`, `gz.decompress()`
+    print(repr(gz), repr(gz.decompress()))
