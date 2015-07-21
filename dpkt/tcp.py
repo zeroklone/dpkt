@@ -4,6 +4,7 @@
 
 import dpkt
 from decorators import deprecated
+import compatible
 
 # TCP control flags
 TH_FIN = 0x01  # end of data
@@ -31,7 +32,7 @@ class TCP(dpkt.Packet):
         ('sum', 'H', 0),
         ('urp', 'H', 0)
     )
-    opts = ''
+    opts = b''
 
     @property
     def off(self):
@@ -54,7 +55,10 @@ class TCP(dpkt.Packet):
         return self.__hdr_len__ + len(self.opts) + len(self.data)
 
     def __str__(self):
-        return self.pack_hdr() + str(self.opts) + str(self.data)
+        return str(self.__bytes__())
+    
+    def __bytes__(self):
+        return self.pack_hdr() + bytes(self.opts) + bytes(self.data)
 
     def unpack(self, buf):
         dpkt.Packet.unpack(self, buf)
@@ -98,11 +102,11 @@ def parse_opts(buf):
     """Parse TCP option buffer into a list of (option, data) tuples."""
     opts = []
     while buf:
-        o = ord(buf[0])
+        o = compatible.compatible_ord(buf[0])
         if o > TCP_OPT_NOP:
             try:
                 # advance buffer at least 2 bytes = 1 type + 1 length
-                l = max(2, ord(buf[1]))
+                l = max(2, compatible.compatible_ord(buf[1]))
                 d, buf = buf[2:l], buf[l:]
             except (IndexError, ValueError):
                 # print 'bad option', repr(str(buf))
@@ -110,40 +114,40 @@ def parse_opts(buf):
                 break
         else:
             # options 0 and 1 are not followed by length byte
-            d, buf = '', buf[1:]
+            d, buf = b'', buf[1:]
         opts.append((o, d))
     return opts
 
 
 def test_parse_opts():
     # normal scenarios
-    buf = '\x02\x04\x23\x00\x01\x01\x04\x02'
+    buf = b'\x02\x04\x23\x00\x01\x01\x04\x02'
     opts = parse_opts(buf)
     assert opts == [
-        (TCP_OPT_MSS, '\x23\x00'),
-        (TCP_OPT_NOP, ''),
-        (TCP_OPT_NOP, ''),
-        (TCP_OPT_SACKOK, '')
+        (TCP_OPT_MSS, b'\x23\x00'),
+        (TCP_OPT_NOP, b''),
+        (TCP_OPT_NOP, b''),
+        (TCP_OPT_SACKOK, b'')
     ]
 
-    buf = '\x01\x01\x05\x0a\x37\xf8\x19\x70\x37\xf8\x29\x78'
+    buf = b'\x01\x01\x05\x0a\x37\xf8\x19\x70\x37\xf8\x29\x78'
     opts = parse_opts(buf)
     assert opts == [
-        (TCP_OPT_NOP, ''),
-        (TCP_OPT_NOP, ''),
-        (TCP_OPT_SACK, '\x37\xf8\x19\x70\x37\xf8\x29\x78')
+        (TCP_OPT_NOP, b''),
+        (TCP_OPT_NOP, b''),
+        (TCP_OPT_SACK, b'\x37\xf8\x19\x70\x37\xf8\x29\x78')
     ]
 
     # test a zero-length option
-    buf = '\x02\x00\x01'
+    buf = b'\x02\x00\x01'
     opts = parse_opts(buf)
     assert opts == [
-        (TCP_OPT_MSS, ''),
-        (TCP_OPT_NOP, '')
+        (TCP_OPT_MSS, b''),
+        (TCP_OPT_NOP, b'')
     ]
 
     # test a one-byte malformed option
-    buf = '\xff'
+    buf = b'\xff'
     opts = parse_opts(buf)
     assert opts == [None]
 
