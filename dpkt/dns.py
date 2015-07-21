@@ -5,6 +5,8 @@
 import struct
 import dpkt
 from decorators import deprecated
+import compatible
+import sys
 
 DNS_Q = 0
 DNS_R = 1
@@ -60,13 +62,13 @@ DNS_ANY = 255
 
 def pack_name(name, off, label_ptrs):
     if name:
-        labels = name.split('.')
+        labels = name.split(b'.')
     else:
         labels = []
-    labels.append('')
-    buf = ''
+    labels.append(b'')
+    buf = b''
     for i, label in enumerate(labels):
-        key = '.'.join(labels[i:]).upper()
+        key = b'.'.join(labels[i:]).upper()
         ptr = label_ptrs.get(key)
         if not ptr:
             if len(key) > 1:
@@ -74,7 +76,10 @@ def pack_name(name, off, label_ptrs):
                 if ptr < 0xc000:
                     label_ptrs[key] = ptr
             i = len(label)
-            buf += chr(i) + label
+            if sys.version_info < (3,):
+                buf += chr(i) + label
+            else:
+                buf += struct.pack("B",i) + label
         else:
             buf += struct.pack('>H', (0xc000 | ptr))
             break
@@ -82,10 +87,10 @@ def pack_name(name, off, label_ptrs):
 
 
 def unpack_name(buf, off):
-    name = ''
+    name = b''
     saved_off = 0
     for _ in range(100):  # XXX
-        n = ord(buf[off])
+        n = compatible.compatible_ord(buf[off])
         if n == 0:
             off += 1
             break
@@ -95,15 +100,15 @@ def unpack_name(buf, off):
             if not saved_off:
                 saved_off = off
             # XXX - don't use recursion!@#$
-            name = name + unpack_name(buf, ptr)[0] + '.'
+            name = name + unpack_name(buf, ptr)[0] + b'.'
             break
         else:
             off += 1
-            name = name + buf[off:off + n] + '.'
+            name = name + buf[off:off + n] + b'.'
             if len(name) > 255:
                 raise dpkt.UnpackError('name longer than 255 bytes')
             off += n
-    return name.strip('.'), off
+    return name.strip(b'.'), off
 
 
 class DNS(dpkt.Packet):
@@ -293,12 +298,12 @@ class DNS(dpkt.Packet):
                 l.append(pack_name(self.rname, off + len(l[0]), label_ptrs))
                 l.append(struct.pack('>IIIII', self.serial, self.refresh,
                                      self.retry, self.expire, self.minimum))
-                return ''.join(l)
+                return b''.join(l)
             elif self.type == DNS_MX:
                 return struct.pack('>H', self.preference) + \
                        pack_name(self.mxname, off + 2, label_ptrs)
             elif self.type == DNS_TXT or self.type == DNS_HINFO:
-                return ''.join(['%s%s' % (chr(len(x)), x)
+                return b''.join(['%s%s' % (chr(len(x)), x)
                                 for x in self.text])
             elif self.type == DNS_AAAA:
                 return self.ip6
@@ -327,7 +332,7 @@ class DNS(dpkt.Packet):
                 self.text = []
                 buf = self.rdata
                 while buf:
-                    n = ord(buf[0])
+                    n = compatible.compatible_ord(buf[0])
                     self.text.append(buf[1:1 + n])
                     buf = buf[1 + n:]
             elif self.type == DNS_AAAA:
@@ -379,13 +384,16 @@ class DNS(dpkt.Packet):
             for _ in range(cnt):
                 rr, off = self.unpack_rr(buf, off)
                 getattr(self, x).append(rr)
-        self.data = ''
+        self.data = b''
 
     def __len__(self):
         # XXX - cop out
         return len(str(self))
 
     def __str__(self):
+        return str(self.__bytes__())
+    
+    def __bytes__(self):
         # XXX - compress names on the fly
         self.label_ptrs = {}
         buf = struct.pack(self.__hdr_fmt__, self.id, self.op, len(self.qd),
@@ -400,37 +408,37 @@ class DNS(dpkt.Packet):
 
 
 def test_basic():
-    from ip import IP
+    import ip
 
-    s = 'E\x00\x02\x08\xc15\x00\x00\x80\x11\x92aBk0\x01Bk0w\x005\xc07\x01\xf4\xda\xc2d\xd2\x81\x80\x00\x01\x00\x03\x00\x0b\x00\x0b\x03www\x06google\x03com\x00\x00\x01\x00\x01\xc0\x0c\x00\x05\x00\x01\x00\x00\x03V\x00\x17\x03www\x06google\x06akadns\x03net\x00\xc0,\x00\x01\x00\x01\x00\x00\x01\xa3\x00\x04@\xe9\xabh\xc0,\x00\x01\x00\x01\x00\x00\x01\xa3\x00\x04@\xe9\xabc\xc07\x00\x02\x00\x01\x00\x00KG\x00\x0c\x04usw5\x04akam\xc0>\xc07\x00\x02\x00\x01\x00\x00KG\x00\x07\x04usw6\xc0t\xc07\x00\x02\x00\x01\x00\x00KG\x00\x07\x04usw7\xc0t\xc07\x00\x02\x00\x01\x00\x00KG\x00\x08\x05asia3\xc0t\xc07\x00\x02\x00\x01\x00\x00KG\x00\x05\x02za\xc07\xc07\x00\x02\x00\x01\x00\x00KG\x00\x0f\x02zc\x06akadns\x03org\x00\xc07\x00\x02\x00\x01\x00\x00KG\x00\x05\x02zf\xc07\xc07\x00\x02\x00\x01\x00\x00KG\x00\x05\x02zh\xc0\xd5\xc07\x00\x02\x00\x01\x00\x00KG\x00\x07\x04eur3\xc0t\xc07\x00\x02\x00\x01\x00\x00KG\x00\x07\x04use2\xc0t\xc07\x00\x02\x00\x01\x00\x00KG\x00\x07\x04use4\xc0t\xc0\xc1\x00\x01\x00\x01\x00\x00\xfb4\x00\x04\xd0\xb9\x84\xb0\xc0\xd2\x00\x01\x00\x01\x00\x001\x0c\x00\x04?\xf1\xc76\xc0\xed\x00\x01\x00\x01\x00\x00\xfb4\x00\x04?\xd7\xc6S\xc0\xfe\x00\x01\x00\x01\x00\x001\x0c\x00\x04?\xd00.\xc1\x0f\x00\x01\x00\x01\x00\x00\n\xdf\x00\x04\xc1-\x01g\xc1"\x00\x01\x00\x01\x00\x00\x101\x00\x04?\xd1\xaa\x88\xc15\x00\x01\x00\x01\x00\x00\r\x1a\x00\x04PCC\xb6\xc0o\x00\x01\x00\x01\x00\x00\x10\x7f\x00\x04?\xf1I\xd6\xc0\x87\x00\x01\x00\x01\x00\x00\n\xdf\x00\x04\xce\x84dl\xc0\x9a\x00\x01\x00\x01\x00\x00\n\xdf\x00\x04A\xcb\xea\x1b\xc0\xad\x00\x01\x00\x01\x00\x00\x0b)\x00\x04\xc1l\x9a\t'
-    ip = IP(s)
+    s = b'E\x00\x02\x08\xc15\x00\x00\x80\x11\x92aBk0\x01Bk0w\x005\xc07\x01\xf4\xda\xc2d\xd2\x81\x80\x00\x01\x00\x03\x00\x0b\x00\x0b\x03www\x06google\x03com\x00\x00\x01\x00\x01\xc0\x0c\x00\x05\x00\x01\x00\x00\x03V\x00\x17\x03www\x06google\x06akadns\x03net\x00\xc0,\x00\x01\x00\x01\x00\x00\x01\xa3\x00\x04@\xe9\xabh\xc0,\x00\x01\x00\x01\x00\x00\x01\xa3\x00\x04@\xe9\xabc\xc07\x00\x02\x00\x01\x00\x00KG\x00\x0c\x04usw5\x04akam\xc0>\xc07\x00\x02\x00\x01\x00\x00KG\x00\x07\x04usw6\xc0t\xc07\x00\x02\x00\x01\x00\x00KG\x00\x07\x04usw7\xc0t\xc07\x00\x02\x00\x01\x00\x00KG\x00\x08\x05asia3\xc0t\xc07\x00\x02\x00\x01\x00\x00KG\x00\x05\x02za\xc07\xc07\x00\x02\x00\x01\x00\x00KG\x00\x0f\x02zc\x06akadns\x03org\x00\xc07\x00\x02\x00\x01\x00\x00KG\x00\x05\x02zf\xc07\xc07\x00\x02\x00\x01\x00\x00KG\x00\x05\x02zh\xc0\xd5\xc07\x00\x02\x00\x01\x00\x00KG\x00\x07\x04eur3\xc0t\xc07\x00\x02\x00\x01\x00\x00KG\x00\x07\x04use2\xc0t\xc07\x00\x02\x00\x01\x00\x00KG\x00\x07\x04use4\xc0t\xc0\xc1\x00\x01\x00\x01\x00\x00\xfb4\x00\x04\xd0\xb9\x84\xb0\xc0\xd2\x00\x01\x00\x01\x00\x001\x0c\x00\x04?\xf1\xc76\xc0\xed\x00\x01\x00\x01\x00\x00\xfb4\x00\x04?\xd7\xc6S\xc0\xfe\x00\x01\x00\x01\x00\x001\x0c\x00\x04?\xd00.\xc1\x0f\x00\x01\x00\x01\x00\x00\n\xdf\x00\x04\xc1-\x01g\xc1"\x00\x01\x00\x01\x00\x00\x101\x00\x04?\xd1\xaa\x88\xc15\x00\x01\x00\x01\x00\x00\r\x1a\x00\x04PCC\xb6\xc0o\x00\x01\x00\x01\x00\x00\x10\x7f\x00\x04?\xf1I\xd6\xc0\x87\x00\x01\x00\x01\x00\x00\n\xdf\x00\x04\xce\x84dl\xc0\x9a\x00\x01\x00\x01\x00\x00\n\xdf\x00\x04A\xcb\xea\x1b\xc0\xad\x00\x01\x00\x01\x00\x00\x0b)\x00\x04\xc1l\x9a\t'
+    ip = ip.IP(s)
     my_dns = DNS(ip.udp.data)
-    assert my_dns.qd[0].name == 'www.google.com' and my_dns.an[1].name == 'www.google.akadns.net'
-    s = '\x05\xf5\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03www\x03cnn\x03com\x00\x00\x01\x00\x01'
+    assert my_dns.qd[0].name == b'www.google.com' and my_dns.an[1].name == b'www.google.akadns.net'
+    s = b'\x05\xf5\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03www\x03cnn\x03com\x00\x00\x01\x00\x01'
     my_dns = DNS(s)
-    assert s == str(my_dns)
+    assert s == bytes(my_dns)
 
 
 def test_PTR():
-    s = 'g\x02\x81\x80\x00\x01\x00\x01\x00\x03\x00\x00\x011\x011\x03211\x03141\x07in-addr\x04arpa\x00\x00\x0c\x00\x01\xc0\x0c\x00\x0c\x00\x01\x00\x00\r6\x00$\x07default\nv-umce-ifs\x05umnet\x05umich\x03edu\x00\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\r\x06shabby\x03ifs\xc0O\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0f\x0cfish-license\xc0m\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0b\x04dns2\x03itd\xc0O'
+    s = b'g\x02\x81\x80\x00\x01\x00\x01\x00\x03\x00\x00\x011\x011\x03211\x03141\x07in-addr\x04arpa\x00\x00\x0c\x00\x01\xc0\x0c\x00\x0c\x00\x01\x00\x00\r6\x00$\x07default\nv-umce-ifs\x05umnet\x05umich\x03edu\x00\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\r\x06shabby\x03ifs\xc0O\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0f\x0cfish-license\xc0m\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0b\x04dns2\x03itd\xc0O'
     my_dns = DNS(s)
-    assert my_dns.qd[0].name == '1.1.211.141.in-addr.arpa' and \
-           my_dns.an[0].ptrname == 'default.v-umce-ifs.umnet.umich.edu' and \
-           my_dns.ns[0].nsname == 'shabby.ifs.umich.edu' and \
-           my_dns.ns[1].ttl == 3382L and \
-           my_dns.ns[2].nsname == 'dns2.itd.umich.edu'
-    assert s == str(my_dns)
+    assert my_dns.qd[0].name == b'1.1.211.141.in-addr.arpa' and \
+           my_dns.an[0].ptrname == b'default.v-umce-ifs.umnet.umich.edu' and \
+           my_dns.ns[0].nsname == b'shabby.ifs.umich.edu' and \
+           my_dns.ns[1].ttl == 3382 and \
+           my_dns.ns[2].nsname == b'dns2.itd.umich.edu'
+    assert s == bytes(my_dns)
 
 
 def test_pack_name():
     # Empty name is \0
-    x = pack_name('', 0, {})
-    assert x == '\0'
+    x = pack_name(b'', 0, {})
+    assert x == b'\0'
 
 
 def test_deprecated_methods():
     """Test deprecated methods. Note: when they are removed so should this test"""
-    s = 'g\x02\x81\x80\x00\x01\x00\x01\x00\x03\x00\x00\x011\x011\x03211\x03141\x07in-addr\x04arpa\x00\x00\x0c\x00\x01\xc0\x0c\x00\x0c\x00\x01\x00\x00\r6\x00$\x07default\nv-umce-ifs\x05umnet\x05umich\x03edu\x00\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\r\x06shabby\x03ifs\xc0O\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0f\x0cfish-license\xc0m\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0b\x04dns2\x03itd\xc0O'
+    s = b'g\x02\x81\x80\x00\x01\x00\x01\x00\x03\x00\x00\x011\x011\x03211\x03141\x07in-addr\x04arpa\x00\x00\x0c\x00\x01\xc0\x0c\x00\x0c\x00\x01\x00\x00\r6\x00$\x07default\nv-umce-ifs\x05umnet\x05umich\x03edu\x00\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\r\x06shabby\x03ifs\xc0O\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0f\x0cfish-license\xc0m\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0b\x04dns2\x03itd\xc0O'
     my_dns = DNS(s)
     my_dns.get_aa()
     my_dns.get_opcode()
@@ -444,11 +452,11 @@ def test_deprecated_method_performance():
     """Test the performance hit for the deprecation decorator"""
     from timeit import Timer
 
-    s = 'g\x02\x81\x80\x00\x01\x00\x01\x00\x03\x00\x00\x011\x011\x03211\x03141\x07in-addr\x04arpa\x00\x00\x0c\x00\x01\xc0\x0c\x00\x0c\x00\x01\x00\x00\r6\x00$\x07default\nv-umce-ifs\x05umnet\x05umich\x03edu\x00\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\r\x06shabby\x03ifs\xc0O\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0f\x0cfish-license\xc0m\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0b\x04dns2\x03itd\xc0O'
+    s = b'g\x02\x81\x80\x00\x01\x00\x01\x00\x03\x00\x00\x011\x011\x03211\x03141\x07in-addr\x04arpa\x00\x00\x0c\x00\x01\xc0\x0c\x00\x0c\x00\x01\x00\x00\r6\x00$\x07default\nv-umce-ifs\x05umnet\x05umich\x03edu\x00\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\r\x06shabby\x03ifs\xc0O\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0f\x0cfish-license\xc0m\xc0\x0e\x00\x02\x00\x01\x00\x00\r6\x00\x0b\x04dns2\x03itd\xc0O'
     my_dns = DNS(s)
     t1 = Timer(lambda: my_dns.aa).timeit(10000)
     t2 = Timer(my_dns.get_aa).timeit(10000)
-    print 'Performance of dns.aa vs. dns.get_aa(): %f %f' % (t1, t2)
+    print('Performance of dns.aa vs. dns.get_aa(): %f %f' % (t1, t2))
 
 
 if __name__ == '__main__':
@@ -458,4 +466,4 @@ if __name__ == '__main__':
     test_pack_name()
     test_deprecated_methods()
     test_deprecated_method_performance()
-    print 'Tests Successful...'
+    print('Tests Successful...')
