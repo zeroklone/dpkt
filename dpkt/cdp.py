@@ -71,10 +71,13 @@ class CDP(dpkt.Packet):
             return self.__hdr_len__ + n
 
         def __str__(self):
+            return str(self.__bytes__())
+        
+        def __bytes__(self):
             self.len = len(self)
             if self.type == CDP_ADDRESS:
                 s = struct.pack('>I', len(self.data)) + \
-                    ''.join(map(str, self.data))
+                    b''.join(map(bytes, self.data))
             else:
                 s = self.data
             return self.pack_hdr() + s
@@ -93,7 +96,10 @@ class CDP(dpkt.Packet):
         return self.__hdr_len__ + sum(map(len, self.data))
 
     def __str__(self):
-        data = ''.join(map(str, self.data))
+        return str(self.__bytes__())
+    
+    def __bytes__(self):
+        data = b''.join(map(bytes, self.data))
         if not self.sum:
             self.sum = dpkt.in_cksum(self.pack_hdr() + data)
         return self.pack_hdr() + data
