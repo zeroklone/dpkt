@@ -3,6 +3,7 @@
 """Remote Authentication Dial-In User Service."""
 
 import dpkt
+import compatible
 
 # http://www.untruth.org/~josh/security/radius/radius-auth.html
 # RFC 2865
@@ -15,20 +16,20 @@ class RADIUS(dpkt.Packet):
         ('len', 'H', 4),
         ('auth', '16s', '')
     )
-    attrs = ''
+    attrs = b''
 
     def unpack(self, buf):
         dpkt.Packet.unpack(self, buf)
         self.attrs = parse_attrs(self.data)
-        self.data = ''
+        self.data = b''
 
 
 def parse_attrs(buf):
     """Parse attributes buffer into a list of (type, data) tuples."""
     attrs = []
     while buf:
-        t = ord(buf[0])
-        l = ord(buf[1])
+        t = compatible.compatible_ord(buf[0])
+        l = compatible.compatible_ord(buf[1])
         if l < 2:
             break
         d, buf = buf[2:l], buf[l:]
