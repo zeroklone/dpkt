@@ -36,7 +36,7 @@ class RTP(Packet):
         ('ts', 'I', 0),
         ('ssrc', 'I', 0),
     )
-    csrc = ''
+    csrc = b''
 
     @property
     def version(self): return (self._type & _VERSION_MASK) >> _VERSION_SHIFT
@@ -118,7 +118,10 @@ class RTP(Packet):
         return self.__hdr_len__ + len(self.csrc) + len(self.data)
 
     def __str__(self):
-        return self.pack_hdr() + self.csrc + str(self.data)
+        return str(self.__bytes__())
+    
+    def __bytes__(self):
+        return self.pack_hdr() + self.csrc + bytes(self.data)
 
     def unpack(self, buf):
         super(RTP, self).unpack(buf)
