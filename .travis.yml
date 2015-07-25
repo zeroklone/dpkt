@@ -1,12 +1,15 @@
 language: python
-python: 2.7
+python:
+  - "2.6"
+  - "2.7"
+  - "3.4"
 env:
   global:
     LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
   matrix:
     - TOXENV=py26,coveralls
     - TOXENV=py27,coveralls
-    - TOXENV=py33,coveralls
+    - TOXENV=py34,coveralls
     - TOXENV=pypy,coveralls
     - TOXENV=docs
 before_install:
