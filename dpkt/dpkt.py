@@ -7,7 +7,6 @@ import itertools
 import socket
 import struct
 import array
-from six import with_metaclass
 
 
 class Error(Exception):
