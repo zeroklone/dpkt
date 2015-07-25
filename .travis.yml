@@ -1,11 +1,24 @@
 language: python
-
 matrix:
   include:
     - python: "2.6"
       env: TOXENV=py26,coveralls LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - python: "2.6"
+      env: TOXENV=pypy,coveralls LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - python: "2.6"
+      env: TOXENV=docs,coveralls LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - python: "2.7"
+      env: TOXENV=py27,coveralls LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - python: "2.7"
+      env: TOXENV=pypy,coveralls LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - python: "2.7"
+      env: TOXENV=docs,coveralls LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - python: "3.4"
       env: TOXENV=py34,coveralls LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - python: "3.4"
+      env: TOXENV=pypy,coveralls LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - python: "3.4"
+      env: TOXENV=docs,coveralls LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
 before_install:
   - python --version
   - virtualenv --version
