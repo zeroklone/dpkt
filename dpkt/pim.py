@@ -3,7 +3,7 @@
 """Protocol Independent Multicast."""
 
 import dpkt
-from decorators import deprecated
+from .decorators import deprecated
 
 
 class PIM(dpkt.Packet):

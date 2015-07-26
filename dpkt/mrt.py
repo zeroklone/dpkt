@@ -3,7 +3,7 @@
 """Multi-threaded Routing Toolkit."""
 
 import dpkt
-import bgp
+from . import bgp
 
 # Multi-threaded Routing Toolkit
 # http://www.ietf.org/internet-drafts/draft-ietf-grow-mrt-03.txt

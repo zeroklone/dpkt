@@ -5,8 +5,8 @@
 import socket
 import struct
 import dpkt
-from decorators import deprecated
 import sys
+from .decorators import deprecated
 
 
 # Frame Types

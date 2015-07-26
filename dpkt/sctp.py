@@ -3,7 +3,7 @@
 """Stream Control Transmission Protocol."""
 
 import dpkt
-import crc32c
+from . import crc32c
 
 # Stream Control Transmission Protocol
 # http://tools.ietf.org/html/rfc2960

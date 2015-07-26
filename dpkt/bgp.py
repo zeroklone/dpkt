@@ -5,7 +5,7 @@
 import struct
 import socket
 import dpkt
-from decorators import deprecated
+from .decorators import deprecated
 
 
 # Border Gateway Protocol 4 - RFC 4271

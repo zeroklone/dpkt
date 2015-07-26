@@ -3,7 +3,7 @@
 """Network Time Protocol."""
 
 import dpkt
-from decorators import deprecated
+from .decorators import deprecated
 
 # NTP v4
 

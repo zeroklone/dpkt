@@ -3,8 +3,8 @@
 """PPP-over-Ethernet."""
 
 import dpkt
-import ppp
-from decorators import deprecated
+from . import ppp
+from .decorators import deprecated
 
 # RFC 2516 codes
 PPPoE_PADI = 0x09

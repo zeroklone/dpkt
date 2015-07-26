@@ -4,7 +4,7 @@
 
 import struct
 import dpkt
-import tpkt
+from . import tpkt
 
 
 # H225 Call Signaling

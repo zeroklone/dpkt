@@ -3,7 +3,7 @@
 
 import struct
 import dpkt
-from decorators import deprecated
+from .decorators import deprecated
 
 
 class AOE(dpkt.Packet):

@@ -3,7 +3,7 @@
 """Telnet."""
 import sys
 import struct
-import compatible
+from . import compatible
 
 IAC = 255  # interpret as command:
 DONT = 254  # you are not to use option

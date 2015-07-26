@@ -4,7 +4,7 @@
 
 import struct
 import dpkt
-from decorators import deprecated
+from .decorators import deprecated
 
 GRE_CP = 0x8000  # Checksum Present
 GRE_RP = 0x4000  # Routing Present
@@ -122,6 +122,6 @@ class GRE(dpkt.Packet):
         return self.pack_hdr() + opt_s + b''.join(map(bytes, self.sre)) + bytes(self.data)
 
 # XXX - auto-load GRE dispatch table from Ethernet dispatch table
-import ethernet
+from . import ethernet
 
 GRE._protosw.update(ethernet.Ethernet._typesw)

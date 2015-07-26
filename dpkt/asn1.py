@@ -6,7 +6,7 @@ import struct
 import time
 import dpkt
 import sys
-import compatible
+from . import compatible
 
 # Type class
 CLASSMASK = 0xc0

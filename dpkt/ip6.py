@@ -3,8 +3,8 @@
 """Internet Protocol, version 6."""
 
 import dpkt
-from decorators import deprecated
-import compatible
+from .decorators import deprecated
+from . import compatible
 
 
 class IP6(dpkt.Packet):
@@ -135,7 +135,7 @@ class IP6(dpkt.Packet):
         return cls._protosw[p]
 
 
-import ip
+from . import ip
 # We are most likely still in the middle of ip.__load_protos() which
 # implicitly loads this module through __import__(), so the content of
 # ip.IP._protosw is still incomplete at the moment.  By sharing the

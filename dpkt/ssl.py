@@ -4,7 +4,7 @@
 """Secure Sockets Layer / Transport Layer Security."""
 
 import dpkt
-import ssl_ciphersuites
+from . import ssl_ciphersuites
 import struct
 import binascii
 

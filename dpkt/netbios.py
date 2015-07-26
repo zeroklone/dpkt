@@ -4,7 +4,7 @@
 
 import struct
 import dpkt
-import dns
+from . import dns
 
 
 def encode_name(name):

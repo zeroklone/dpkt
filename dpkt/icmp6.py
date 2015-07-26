@@ -3,7 +3,7 @@
 """Internet Control Message Protocol for IPv6."""
 
 import dpkt
-import ip6
+from . import ip6
 
 ICMP6_DST_UNREACH = 1  # dest unreachable, codes:
 ICMP6_PACKET_TOO_BIG = 2  # packet too big

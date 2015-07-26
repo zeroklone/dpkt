@@ -2,9 +2,9 @@
 """Radiotap"""
 
 import dpkt
-import ieee80211
 import socket
-from decorators import deprecated
+from . import ieee80211
+from .decorators import deprecated
 
 # Ref: http://www.radiotap.org
 # Fields Ref: http://www.radiotap.org/defined-fields/all

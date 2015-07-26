@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 """Dynamic Host Configuration Protocol."""
 
-import arp
 import dpkt
 import sys
 import struct
-import compatible
+from . import arp
+from . import compatible
 
 DHCP_OP_REQUEST = 1
 DHCP_OP_REPLY = 2

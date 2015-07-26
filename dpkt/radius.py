@@ -3,7 +3,7 @@
 """Remote Authentication Dial-In User Service."""
 
 import dpkt
-import compatible
+from . import compatible
 
 # http://www.untruth.org/~josh/security/radius/radius-auth.html
 # RFC 2865

@@ -4,9 +4,9 @@
 
 import struct
 import dpkt
-from decorators import deprecated
-import compatible
 import sys
+from .decorators import deprecated
+from . import compatible
 
 DNS_Q = 0
 DNS_R = 1

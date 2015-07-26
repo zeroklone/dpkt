@@ -4,10 +4,9 @@
 
 import struct
 import dpkt
-from decorators import deprecated
-import compatible
-import struct
 import sys
+from .decorators import deprecated
+from . import compatible
 
 # Diameter Base Protocol - RFC 3588
 # http://tools.ietf.org/html/rfc3588

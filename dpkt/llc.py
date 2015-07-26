@@ -2,8 +2,8 @@
 
 import struct
 import dpkt
-import stp
-import ethernet
+from . import stp
+from . import ethernet
 
 
 class LLC(dpkt.Packet):

@@ -5,7 +5,7 @@ with automatic 802.1q, MPLS, PPPoE, and Cisco ISL decapsulation."""
 
 import struct
 import dpkt
-import stp
+from . import stp
 
 
 ETH_CRC_LEN = 4

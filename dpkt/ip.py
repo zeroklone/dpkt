@@ -3,7 +3,7 @@
 """Internet Protocol."""
 
 import dpkt
-from decorators import deprecated
+from .decorators import deprecated
 
 
 class IP(dpkt.Packet):
