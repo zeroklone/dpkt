@@ -48,7 +48,7 @@ ssl3_versions_str = {
     TLS12_V: 'TLS 1.2'
 }
 
-SSL3_VERSION_BYTES = set(('\x03\x00', '\x03\x01', '\x03\x02', '\x03\x03'))
+SSL3_VERSION_BYTES = set((b'\x03\x00', b'\x03\x01', b'\x03\x02', b'\x03\x03'))
 
 
 # Alert levels
@@ -145,7 +145,7 @@ def parse_variable_array(buf, lenbytes):
     # first have to figure out how to parse length
     assert lenbytes <= 4  # pretty sure 4 is impossible, too
     size_format = _SIZE_FORMATS[lenbytes - 1]
-    padding = '\x00' if lenbytes == 3 else ''
+    padding = b'\x00' if lenbytes == 3 else ''
     # read off the length
     size = struct.unpack(size_format, padding + buf[:lenbytes])[0]
     # read the actual data
@@ -339,7 +339,7 @@ class TLSHandshake(dpkt.Packet):
 
     @property
     def length(self):
-        return struct.unpack('!I', '\x00' + self.length_bytes)[0]
+        return struct.unpack('!I', b'\x00' + self.length_bytes)[0]
 
 
 RECORD_TYPES = {
@@ -403,7 +403,7 @@ class TestTLSRecord(object):
     @classmethod
     def setup_class(cls):
         # add some extra data, to make sure length is parsed correctly
-        cls.p = TLSRecord('\x17\x03\x01\x00\x08abcdefghzzzzzzzzzzz')
+        cls.p = TLSRecord(b'\x17\x03\x01\x00\x08abcdefghzzzzzzzzzzz')
 
     def test_content_type(self):
         assert (self.p.type == 23)
@@ -415,18 +415,18 @@ class TestTLSRecord(object):
         assert (self.p.length == 8)
 
     def test_data(self):
-        assert (self.p.data == 'abcdefgh')
+        assert (self.p.data == b'abcdefgh')
 
     def test_initial_flags(self):
         assert (self.p.compressed == True)
         assert (self.p.encrypted == True)
 
     def test_repack(self):
-        p2 = TLSRecord(type=23, version=0x0301, data='abcdefgh')
+        p2 = TLSRecord(type=23, version=0x0301, data=b'abcdefgh')
         assert (p2.type == 23)
         assert (p2.version == 0x0301)
         assert (p2.length == 8)
-        assert (p2.data == 'abcdefgh')
+        assert (p2.data == b'abcdefgh')
         assert (p2.pack() == self.p.pack())
 
     def test_total_length(self):
@@ -435,7 +435,7 @@ class TestTLSRecord(object):
 
     def test_raises_need_data_when_buf_is_short(self):
         import pytest
-        pytest.raises(dpkt.NeedData, TLSRecord, '\x16\x03\x01\x00\x10abc')
+        pytest.raises(dpkt.NeedData, TLSRecord, b'\x16\x03\x01\x00\x10abc')
 
 
 class TestTLSChangeCipherSpec(object):
@@ -444,7 +444,7 @@ class TestTLSChangeCipherSpec(object):
 
     @classmethod
     def setup_class(cls):
-        cls.p = TLSChangeCipherSpec('\x01')
+        cls.p = TLSChangeCipherSpec(b'\x01')
 
     def test_parses(self):
         assert (self.p.type == 1)
@@ -458,14 +458,14 @@ class TestTLSAppData(object):
     """AppData is basically just a string"""
 
     def test_value(self):
-        d = TLSAppData('abcdefgh')
-        assert (d == 'abcdefgh')
+        d = TLSAppData(b'abcdefgh')
+        assert (d == b'abcdefgh')
 
 
 class TestTLSHandshake(object):
     @classmethod
     def setup_class(cls):
-        cls.h = TLSHandshake('\x00\x00\x00\x01\xff')
+        cls.h = TLSHandshake(b'\x00\x00\x00\x01\xff')
 
     def test_created_inside_message(self):
         assert (isinstance(self.h.data, TLSHelloRequest) == True)
@@ -475,7 +475,7 @@ class TestTLSHandshake(object):
 
     def test_raises_need_data(self):
         import pytest
-        pytest.raises(dpkt.NeedData, TLSHandshake, '\x00\x00\x01\x01')
+        pytest.raises(dpkt.NeedData, TLSHandshake, b'\x00\x00\x01\x01')
 
 
 class TestClientHello(object):
