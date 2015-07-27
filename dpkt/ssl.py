@@ -459,7 +459,7 @@ class TestTLSAppData(object):
 
     def test_value(self):
         d = TLSAppData('abcdefgh')
-        assert (d == b'abcdefgh')
+        assert (d == 'abcdefgh')
 
 
 class TestTLSHandshake(object):
@@ -543,7 +543,7 @@ class TestServerHello(object):
         assert (self.p.data.random == _hexdecode(b'5008220c8ec43c5462315a7c99f5d5b6bff009ad285b51dc18485f352e9fdecd'))
 
     def test_cipher_suite(self):
-        assert (ssl_ciphersuites.BY_CODE[self.p.data.cipher_suite].name == b'TLS_RSA_WITH_NULL_SHA')
+        assert (ssl_ciphersuites.BY_CODE[self.p.data.cipher_suite].name == 'TLS_RSA_WITH_NULL_SHA')
 
     def test_total_length(self):
         assert (len(self.p) == 81)
