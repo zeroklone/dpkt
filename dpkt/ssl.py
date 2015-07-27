@@ -145,7 +145,7 @@ def parse_variable_array(buf, lenbytes):
     # first have to figure out how to parse length
     assert lenbytes <= 4  # pretty sure 4 is impossible, too
     size_format = _SIZE_FORMATS[lenbytes - 1]
-    padding = b'\x00' if lenbytes == 3 else ''
+    padding = b'\x00' if lenbytes == 3 else b''
     # read off the length
     size = struct.unpack(size_format, padding + buf[:lenbytes])[0]
     # read the actual data
@@ -458,7 +458,7 @@ class TestTLSAppData(object):
     """AppData is basically just a string"""
 
     def test_value(self):
-        d = TLSAppData(b'abcdefgh')
+        d = TLSAppData('abcdefgh')
         assert (d == b'abcdefgh')
 
 
