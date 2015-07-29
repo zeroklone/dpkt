@@ -6,9 +6,9 @@ import sys
 import time
 import dpkt
 try:
-    import cStringIO
-except ImportError:
     import io
+except ImportError:
+    import cStringIO
 
 TCPDUMP_MAGIC = 0xa1b2c3d4
 PMUDPCT_MAGIC = 0xd4c3b2a1
@@ -208,11 +208,11 @@ def test_reader():
 
     # StringIO
     try:
-        import StringIO
-        fobj = StringIO.StringIO(data)
-    except ImportError:
         import io
         fobj = io.BytesIO(data)
+    except ImportError:
+        import StringIO
+        fobj = StringIO.StringIO(data)
     reader = Reader(fobj)
     if sys.version_info < (3,):
         assert reader.name == '<StringIO>'
@@ -223,11 +223,11 @@ def test_reader():
 
     # cStringIO
     try:
-        import cStringIO
-        fobj = cStringIO.StringIO(data)
-    except ImportError:
         import io
         fobj = io.BytesIO(data)
+    except ImportError:
+        import cStringIO
+        fobj = cStringIO.StringIO(data)
     reader = Reader(fobj)
     if sys.version_info < (3,):
         assert reader.name == '<StringI>'

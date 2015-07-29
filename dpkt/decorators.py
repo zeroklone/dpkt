@@ -65,9 +65,9 @@ class TestDeprecatedDecorator(object):
     def test_deprecated_decorator(self):
         import sys
         try:
-            from StringIO import StringIO
-        except ImportError:
             from io import StringIO
+        except ImportError:
+            from StringIO import StringIO
 
         saved_stderr = sys.stderr
         try:
@@ -95,9 +95,9 @@ class TestDurationDecorator(object):
         import sys
         import re
         try:
-            from StringIO import StringIO
-        except ImportError:
             from io import StringIO
+        except ImportError:
+            from StringIO import StringIO
 
         saved_stdout = sys.stdout
         try:
