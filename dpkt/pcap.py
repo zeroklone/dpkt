@@ -229,7 +229,7 @@ def test_reader():
         import cStringIO
         fobj = cStringIO.StringIO(data)
     reader = Reader(fobj)
-    if sys.version_info < (3,):
+    if sys.version_info < (2, 6):
         assert reader.name == '<StringI>'
     else:
         assert reader.name == '<BytesIO>'

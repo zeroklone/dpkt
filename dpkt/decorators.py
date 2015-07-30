@@ -71,7 +71,7 @@ class TestDeprecatedDecorator(object):
 
         saved_stderr = sys.stderr
         try:
-            out = StringIO()
+            out = BytesIO()
             sys.stderr = out
             self.deprecated_decorator()
             assert ('DeprecationWarning: Call to deprecated method deprecated_decorator' in out.getvalue())
@@ -101,7 +101,7 @@ class TestDurationDecorator(object):
 
         saved_stdout = sys.stdout
         try:
-            out = StringIO()
+            out = BytesIO()
             sys.stdout = out
             self.duration_decorator()
             assert (re.match('((.+?[0-9]+\.[0-9]+)\s?){2}', out.getvalue()))
