@@ -65,13 +65,13 @@ class TestDeprecatedDecorator(object):
     def test_deprecated_decorator(self):
         import sys
         try:
-            from io import BytesIO
-        except ImportError:
             from StringIO import StringIO
+        except ImportError:
+            from io import StringIO
 
         saved_stderr = sys.stderr
         try:
-            out = BytesIO()
+            out = StringIO()
             sys.stderr = out
             self.deprecated_decorator()
             assert ('DeprecationWarning: Call to deprecated method deprecated_decorator' in out.getvalue())
@@ -95,13 +95,13 @@ class TestDurationDecorator(object):
         import sys
         import re
         try:
-            from io import BytesIO
-        except ImportError:
             from StringIO import StringIO
+        except ImportError:
+            from io import StringIO
 
         saved_stdout = sys.stdout
         try:
-            out = BytesIO()
+            out = StringIO()
             sys.stdout = out
             self.duration_decorator()
             assert (re.match('((.+?[0-9]+\.[0-9]+)\s?){2}', out.getvalue()))
