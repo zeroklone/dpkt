@@ -86,7 +86,7 @@ class Packet(_MetaPacket("Temp", (object,), {}))
 
 > Python 3 changes the syntax for imports from within a package, requiring you to use the relative import syntax, saying `from . import mymodule` instead of the just `import mymodule`.
 
-`next` method of the iterator_**
+**_`next` method of the iterator_**
 
 In Python 2 iterators have a `.next()` method you use to get the next value from the iterator. For instance,
 
@@ -106,7 +106,7 @@ for _ in range(cnt):
         ts, pkt = next(iter(self))
 ```
 
-`chr` and `ord` built-in function_**
+**_`chr` and `ord` built-in function_**
 
 For `ord(c)`, given a string of length one, it'll return an integer representing the Unicode code point of the character when the argument is a unicode object, or the value of the byte when the argument is an 8-bit string. While for `chr(i)`, it'll return a string of one character whose ASCII code is the integer i.
 
