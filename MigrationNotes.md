@@ -161,4 +161,4 @@ Well, my suggestions for writing both Python 2 and 3 compatible code are as foll
 
 1. Read the `How to migrate Python 2 code to Python 3` section of this documentation and get familar with the key issues while migration the project to Python 3.
 2. Setup both 2 and 3 environments on your local machine.
-3. Follow the rules below to contribute new code.
+3. Follow the rules below to contribute new code. http://python-future.org/compatible_idioms.html
