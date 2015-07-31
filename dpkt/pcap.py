@@ -207,32 +207,18 @@ def test_reader():
     # --- StringIO tests ---
 
     # StringIO
-    try:
-        import io
-        fobj = io.BytesIO(data)
-    except ImportError:
-        import StringIO
-        fobj = StringIO.StringIO(data)
+    import io
+    fobj = io.BytesIO(data)
     reader = Reader(fobj)
-    if sys.version_info < (2, 6):
-        assert reader.name == '<StringIO>'
-    else:
-        assert reader.name == '<BytesIO>'
+    assert reader.name == '<BytesIO>'
     _, buf1 = next(iter(reader))
     assert buf1 == data[FileHdr.__hdr_len__ + PktHdr.__hdr_len__:]
 
     # cStringIO
-    try:
-        import io
-        fobj = io.BytesIO(data)
-    except ImportError:
-        import cStringIO
-        fobj = cStringIO.StringIO(data)
+    import io
+    fobj = io.BytesIO(data)
     reader = Reader(fobj)
-    if sys.version_info < (2, 6):
-        assert reader.name == '<StringI>'
-    else:
-        assert reader.name == '<BytesIO>'
+    assert reader.name == '<BytesIO>'
     _, buf1 = next(iter(reader))
     assert buf1 == data[FileHdr.__hdr_len__ + PktHdr.__hdr_len__:]
 
