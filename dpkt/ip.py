@@ -21,6 +21,14 @@ class IP(dpkt.Packet):
     )
     _protosw = {}
     opts = b''
+    
+    def __init__(self, *args, **kwargs):
+        super(IP, self).__init__(*args, **kwargs)
+        
+        # If IP packet is not initialized by string and the len field has
+        # been rewritten.
+        if not args and 'len' not in kwargs:
+            self.len = self.__len__()
 
     @property
     def v(self):
@@ -64,6 +72,7 @@ class IP(dpkt.Packet):
         return str(self.__bytes__())
     
     def __bytes__(self):
+        self.len = self.__len__()
         if self.sum == 0:
             self.sum = dpkt.in_cksum(self.pack_hdr() + bytes(self.opts))
             if (self.p == 6 or self.p == 17) and (self.off & (IP_MF | IP_OFFMASK)) == 0 and \
@@ -337,7 +346,7 @@ def test_hl():  # Todo chack this test method
 
 
 def test_opt():
-    s = b'\x4f\x00\x00\x50\xae\x08\x00\x00\x40\x06\x17\xfc\xc0\xa8\x0a\x26\xc0\xa8\x0a\x01\x07\x27\x08\x01\x02\x03\x04\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+    s = b'\x4f\x00\x00\x3c\xae\x08\x00\x00\x40\x06\x18\x10\xc0\xa8\x0a\x26\xc0\xa8\x0a\x01\x07\x27\x08\x01\x02\x03\x04\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     ip = IP(s)
     ip.sum = 0
     assert (bytes(ip) == s)
@@ -351,10 +360,20 @@ def test_zerolen():
     assert (isinstance(ip.data, tcp.TCP))
     assert (ip.tcp.data == d)
 
+def test_constuctor():
+    ip1 = IP(data = "Hello world!")
+    ip2 = IP(data = "Hello world!", len = 0)
+    ip3 = IP(str(ip1))
+    ip4 = IP(str(ip2))
+    assert (str(ip1) == str(ip3))
+    assert (str(ip1) == 'E\x00\x00 \x00\x00\x00\x00@\x00z\xdf\x00\x00\x00\x00\x00\x00\x00\x00Hello world!')
+    assert (str(ip2) == str(ip4))
+    assert (str(ip2) == 'E\x00\x00\x00\x00\x00\x00\x00@\x00z\xff\x00\x00\x00\x00\x00\x00\x00\x00Hello world!')
 
 if __name__ == '__main__':
     test_ip()
     test_hl()
     test_opt()
     test_zerolen()
+    test_constuctor()
     print('Tests Successful...')
