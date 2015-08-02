@@ -441,17 +441,17 @@ def test_PTR():
 
 
 def test_OPT():
-    s = '\x8dn\x01\x10\x00\x01\x00\x00\x00\x00\x00\x01\x04x111\x06xxxx11\x06akamai\x03net\x00\x00\x01\x00\x01\x00\x00)\x0f\xa0\x00\x00\x80\x00\x00\x00'
+    s = b'\x8dn\x01\x10\x00\x01\x00\x00\x00\x00\x00\x01\x04x111\x06xxxx11\x06akamai\x03net\x00\x00\x01\x00\x01\x00\x00)\x0f\xa0\x00\x00\x80\x00\x00\x00'
     my_dns = DNS(s)
     my_rr = my_dns.ar[0]
     assert my_rr.type == DNS_OPT
-    assert my_rr.rlen == 0 and my_rr.rdata == ''
-    assert str(my_dns) == s
+    assert my_rr.rlen == 0 and my_rr.rdata == b''
+    assert bytes(my_dns) == s
 
-    my_rr.rdata = '\x00\x00\x00\x02\x00\x00'  # add 1 attribute tlv
-    my_dns2 = DNS(str(my_dns))
+    my_rr.rdata = b'\x00\x00\x00\x02\x00\x00'  # add 1 attribute tlv
+    my_dns2 = DNS(bytes(my_dns))
     my_rr2 = my_dns2.ar[0]
-    assert my_rr2.rlen == 6 and my_rr2.rdata == '\x00\x00\x00\x02\x00\x00'
+    assert my_rr2.rlen == 6 and my_rr2.rdata == b'\x00\x00\x00\x02\x00\x00'
 
 
 def test_pack_name():

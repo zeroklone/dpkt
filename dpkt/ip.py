@@ -361,14 +361,14 @@ def test_zerolen():
     assert (ip.tcp.data == d)
 
 def test_constuctor():
-    ip1 = IP(data = "Hello world!")
-    ip2 = IP(data = "Hello world!", len = 0)
-    ip3 = IP(str(ip1))
-    ip4 = IP(str(ip2))
-    assert (str(ip1) == str(ip3))
-    assert (str(ip1) == 'E\x00\x00 \x00\x00\x00\x00@\x00z\xdf\x00\x00\x00\x00\x00\x00\x00\x00Hello world!')
-    assert (str(ip2) == str(ip4))
-    assert (str(ip2) == 'E\x00\x00 \x00\x00\x00\x00@\x00z\xdf\x00\x00\x00\x00\x00\x00\x00\x00Hello world!')
+    ip1 = IP(data = b"Hello world!")
+    ip2 = IP(data = b"Hello world!", len = 0)
+    ip3 = IP(bytes(ip1))
+    ip4 = IP(bytes(ip2))
+    assert (bytes(ip1) == bytes(ip3))
+    assert (bytes(ip1) == b'E\x00\x00 \x00\x00\x00\x00@\x00z\xdf\x00\x00\x00\x00\x00\x00\x00\x00Hello world!')
+    assert (bytes(ip2) == bytes(ip4))
+    assert (bytes(ip2) == b'E\x00\x00 \x00\x00\x00\x00@\x00z\xdf\x00\x00\x00\x00\x00\x00\x00\x00Hello world!')
 
 if __name__ == '__main__':
     test_ip()
