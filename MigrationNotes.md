@@ -20,7 +20,7 @@ First we'll check out what favor `2to3` could do for us. Then we'll dive into de
 
 * `int` and `long`
 
-Python 2 has two integer types `int` and `long`. We may have the code as follows in Python 2.
+ Python 2 has two integer types `int` and `long`. We may have the code as follows in Python 2.
 
  ``` python
  tmp = ~crc & 0xffffffffL
@@ -77,7 +77,8 @@ Python 2 has two integer types `int` and `long`. We may have the code as follows
     values = d.values()
  ```
  
-* repr()
+* `repr()`
+
  In Python 2 we can generate a string representation of an expression by enclosing it with backticks. However in Python 3 we need to use `repr()` function instead.
 
 * `next` method of the iterator
@@ -156,6 +157,7 @@ Python 2 has two integer types `int` and `long`. We may have the code as follows
 
  `
  a = array.array('H', buf[:cnt])
+ 
  TypeError: slice indices must be integers or None or have an __index__ method
  `
 
