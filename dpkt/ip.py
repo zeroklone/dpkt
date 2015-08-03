@@ -16,8 +16,8 @@ class IP(dpkt.Packet):
         ('ttl', 'B', 64),
         ('p', 'B', 0),
         ('sum', 'H', 0),
-        ('src', '4s', '\x00' * 4),
-        ('dst', '4s', '\x00' * 4)
+        ('src', '4s', b'\x00' * 4),
+        ('dst', '4s', b'\x00' * 4)
     )
     _protosw = {}
     opts = b''

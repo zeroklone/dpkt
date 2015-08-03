@@ -256,7 +256,7 @@ class DNS(dpkt.Packet):
     class Q(dpkt.Packet):
         """DNS question."""
         __hdr__ = (
-            ('name', '1025s', ''),
+            ('name', '1025s', b''),
             ('type', 'H', DNS_A),
             ('cls', 'H', DNS_IN)
         )
@@ -273,12 +273,12 @@ class DNS(dpkt.Packet):
     class RR(Q):
         """DNS resource record."""
         __hdr__ = (
-            ('name', '1025s', ''),
+            ('name', '1025s', b''),
             ('type', 'H', DNS_A),
             ('cls', 'H', DNS_IN),
             ('ttl', 'I', 0),
             ('rlen', 'H', 4),
-            ('rdata', 's', '')
+            ('rdata', 's', b'')
         )
 
         def pack_rdata(self, off, label_ptrs):
@@ -312,7 +312,7 @@ class DNS(dpkt.Packet):
                 return struct.pack('>HHH', self.priority, self.weight, self.port) + \
                        pack_name(self.srvname, off + 6, label_ptrs)
             elif self.type == DNS_OPT:
-                return ''  # self.rdata
+                return b''  # self.rdata
             else:
                 raise dpkt.PackError('RR type %s is not supported' % self.type)
 
