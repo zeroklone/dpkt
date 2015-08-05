@@ -170,7 +170,96 @@ First we'll check out what favor `2to3` could do for us. Then we'll dive into de
 
 **_3. `bytes` and `str` related issues_**
 
+This is a big issue when migrating `dpkt` to Python 3. The changes between `bytes` and `str` are listed as follows.
+
 > In Python 2, you use `str` objects to hold binary data and ASCII text, while text data that needs more characters than what is available in ASCII is held in `unicode` objects. In Python 3, instead of `str` and `unicode` objects, you use `bytes` objects for binary data and `str` objects for all kinds of text data, Unicode or not. 
+
+When update the original code to support Python 3. We need to keep an eye on the following aspects.
+
+*  string and bytes literals
+
+ If the original Python 2 string is holding byte data, we need to change them be bytes literals by adding a leading `b` to them.
+
+ This occurs dozens of times in the project. We need to inspect carefully which strings are holding byte data and change the type of literals. For instance, in many test cases, we might have statements looks like
+ 
+ ``` python
+ ip = IP(id=0, src='\x01\x02\x03\x04', dst='\x01\x02\x03\x04', p=17)
+ ```
+ 
+ Defintely we need to add a leading `b` in the two strings, which become
+ 
+ ``` python
+ ip = IP(id=0, src=b'\x01\x02\x03\x04', dst=b'\x01\x02\x03\x04', p=17)
+ ```
+ 
+* Change `str()` to `bytes()` where necessary
+ 
+ It is common case when we use `dpkt` to convert a protocol object, e.g. IP, TCP, etc., to string form. Such as
+
+ ``` python
+ assert (str(ip) == s)
+ ```
+ 
+ At this time, it is essential to change the code as follows
+ 
+ ``` python
+ assert (bytes(ip) == s)
+ ```
+ 
+ As a consequence, this change leads to the next key point - `__str__` and `__bytes__` function update.
+ 
+* `__str__` and `__bytes__` function
+ 
+ As aforementioned `str()` to `bytes()` update. We have to change the implementation of `__str__` and `__bytes__` respectively. Most of `dpkt` modules do not have a `__bytes__` yet, because in Pythnon 2, its funcionality is exactly the same as `__str__`. However in Python 3, things become different. In my experience, in most situations `dpkt` is dealing with `bytes` data. Thus it is important to provide `__bytes__` implementation for every needed class.
+
+ For instance, the origin `__str__` fuction of `IP` class is
+ 
+ ``` python
+ def __str__(self):
+        self.len = self.__len__()
+        if self.sum == 0:
+            self.sum = dpkt.in_cksum(self.pack_hdr() + str(self.opts))
+            if (self.p == 6 or self.p == 17) and (self.off & (IP_MF | IP_OFFMASK)) == 0 and \
+                    isinstance(self.data, dpkt.Packet) and self.data.sum == 0:
+                # Set zeroed TCP and UDP checksums for non-fragments.
+                p = str(self.data)
+                s = dpkt.struct.pack('>4s4sxBH', self.src, self.dst,
+                                     self.p, len(p))
+                s = dpkt.in_cksum_add(0, s)
+                s = dpkt.in_cksum_add(s, p)
+                self.data.sum = dpkt.in_cksum_done(s)
+                if self.p == 17 and self.data.sum == 0:
+                    self.data.sum = 0xffff  # RFC 768
+                    # XXX - skip transports which don't need the pseudoheader
+        return self.pack_hdr() + str(self.opts) + str(self.data)
+ ```
+ 
+ Now we modify the `__str__` and add `__bytes__` function as follows.
+ 
+ ``` python
+ def __str__(self):
+        return str(self.__bytes__())
+    
+ def __bytes__(self):
+        self.len = self.__len__()
+        if self.sum == 0:
+            self.sum = dpkt.in_cksum(self.pack_hdr() + bytes(self.opts))
+            if (self.p == 6 or self.p == 17) and (self.off & (IP_MF | IP_OFFMASK)) == 0 and \
+                    isinstance(self.data, dpkt.Packet) and self.data.sum == 0:
+                # Set zeroed TCP and UDP checksums for non-fragments.
+                p = bytes(self.data)
+                s = dpkt.struct.pack('>4s4sxBH', self.src, self.dst,
+                                     self.p, len(p))
+                s = dpkt.in_cksum_add(0, s)
+                s = dpkt.in_cksum_add(s, p)
+                self.data.sum = dpkt.in_cksum_done(s)
+                if self.p == 17 and self.data.sum == 0:
+                    self.data.sum = 0xffff  # RFC 768
+                    # XXX - skip transports which don't need the pseudoheader
+        return self.pack_hdr() + bytes(self.opts) + bytes(self.data)
+ ```
+ 
+ Please carefully check the differences between to get a perceptual understanding of how to update `__bytes__` and `__str__`.
 
 * `chr` and `ord` built-in function
 
