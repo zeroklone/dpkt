@@ -51,7 +51,11 @@ class PPP(dpkt.Packet):
 
 def __load_protos():
     g = globals()
-    for k, v in g.items():
+    try:
+        gi = g.iteritems()
+    except:
+        gi = g.items()
+    for k, v in gi:
         if k.startswith('PPP_'):
             name = k[4:]
             modname = name.lower()

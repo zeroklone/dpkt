@@ -86,9 +86,17 @@ class Message(type("NewBase", (dpkt.Packet,), {})):
         else:
             self.headers = {}
             self.body = ''
-            for k, v in self.__hdr_defaults__.items():
+            try:
+                hi = self.__hdr_defaults__.iteritems()
+            except:
+                hi = self.__hdr_defaults__.items()
+            for k, v in hi:
                 setattr(self, k, v)
-            for k, v in kwargs.items():
+            try:
+                ki = kwargs.iteritems()
+            except:
+                ki = kwargs.items()
+            for k, v in ki:
                 setattr(self, k, v)
 
     def unpack(self, buf, is_body_allowed = True):
@@ -102,7 +110,11 @@ class Message(type("NewBase", (dpkt.Packet,), {})):
         self.data = f.read()
 
     def pack_hdr(self):
-        return ''.join(['%s: %s\r\n' % t for t in self.headers.items()])
+        try:
+            hi = self.headers.iteritems()
+        except:
+            hi = self.headers.items()
+        return ''.join(['%s: %s\r\n' % t for t in hi])
 
     def __len__(self):
         return len(str(self))

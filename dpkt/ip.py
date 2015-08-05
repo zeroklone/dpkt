@@ -306,7 +306,11 @@ IP_PROTO_MAX = 255
 
 def __load_protos():
     g = globals()
-    for k, v in g.items():
+    try:
+        gi = g.iteritems()
+    except:
+        gi = g.items()
+    for k, v in gi:
         if k.startswith('IP_PROTO_'):
             name = k[9:].lower()
             try:

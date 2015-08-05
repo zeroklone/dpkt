@@ -119,7 +119,11 @@ class Ethernet(dpkt.Packet):
 # XXX - auto-load Ethernet dispatch table from ETH_TYPE_* definitions
 def __load_types():
     g = globals()
-    for k, v in g.items():
+    try:
+        gi = g.iteritems()
+    except:
+        gi = g.items()
+    for k, v in gi:
         if k.startswith('ETH_TYPE_'):
             name = k[9:]
             modname = name.lower()

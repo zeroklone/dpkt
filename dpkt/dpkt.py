@@ -92,7 +92,11 @@ class Packet(_MetaPacket("Temp", (object,), {})):
         else:
             for k in self.__hdr_fields__:
                 setattr(self, k, copy.copy(self.__hdr_defaults__[k]))
-            for k, v in kwargs.items():
+            try:
+                ki = kwargs.iteritems()
+            except:
+                ki = kwargs.items()
+            for k, v in ki:
                 setattr(self, k, v)
 
     def __len__(self):
@@ -124,9 +128,13 @@ class Packet(_MetaPacket("Temp", (object,), {})):
                         if isinstance(getattr(self.__class__, prop_name, None), property):
                             l.append('%s=%r' % (prop_name, getattr(self, prop_name)))
         # (3)
+        try:
+            di = self.__dict__.iteritems()
+        except:
+            di = self.__dict__.items()
         l.extend(
             ['%s=%r' % (attr_name, attr_value)
-             for attr_name, attr_value in self.__dict__.items()
+             for attr_name, attr_value in di
              if attr_name[0] != '_'                   # exclude _private attributes
              and attr_name != self.data.__class__.__name__.lower()])  # exclude fields like ip.udp
         # (4)

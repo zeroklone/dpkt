@@ -76,7 +76,11 @@ AOE_FLAG_RSP = 1 << 3
 def __load_cmds():
     prefix = 'AOE_CMD_'
     g = globals()
-    for k, v in g.items():
+    try:
+        gi = g.iteritems()
+    except:
+        gi = g.items()
+    for k, v in gi:
         if k.startswith(prefix):
             name = 'aoe' + k[len(prefix):].lower()
             try:
